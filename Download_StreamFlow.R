@@ -10,30 +10,32 @@ setwd("~/Documents/GitRepos/UrbanStreamflow")
 
 USGS_sites<- read_csv('USGSGages.csv')
 siteInfo<-readNWISdata(sites= USGS_sites$Code, service="site")
-
-library(maps)
-library(mapdata)
-par(las = 1, tck = 0.02, mar = c(0, 0, 0, 0))
-map("state", region = c("Idaho"))
-map("rivers", add = TRUE, col = 4)
-# label centered over gage site, jitter added to differentiate sites close together
-mindif <- 0
-maxiterations <- 30
-iteration <- 1
-while (mindif < 0.085) {
-  y.offset <- as.numeric(my.siteInfo$lat) + runif(length(my.siteInfo$lat),0.12, 0.45)
-  mindif <- min(diff(unique(sort.int(round(as.numeric(y.offset), digits = 3)))))
-  iteration <- iteration + 1
-  if ( iteration >= maxiterations ) {
-    mindif <- 0.09
-    message("No ideal jitter found. Some labels may conflict")
-     }
-  }
-points(my.siteInfo$lng, my.siteInfo$lat, pch = 19, col = "green")
-text(xy.coords(my.siteInfo$lng, y.offset), my.siteInfo$staid, cex = 0.55)
-box()
-map.axes()
+write_csv(siteInfo, "siteInfo.csv")
 
 
 start=as.Date("2019-01-16")
 end= as.Date("2019-03-16")
+pCode <- "00060"
+
+
+flowdata <- readNWISuv(siteNumbers = siteInfo$site_no, parameterCd = pCode, startDate = start, endDate = end) %>% renameNWISColumns() %>% data.frame
+
+flow<-merge(flowdata, USGS_sites, by.x="site_no", by.y="Code", all=TRUE)
+
+Drains<-flow[flow$Cat == 'Drain',]
+drainID<-unique(Drains$site_no)
+
+plot(Drains$dateTime[Drains$site_no == drainID[1]], Drains$Flow_Inst[Drains$site_no == drainID[1]], type="l", col="blue", ylim=c(0, 80))
+for (i in 2:3){
+  lines(Drains$dateTime[Drains$site_no == drainID[i]], Drains$Flow_Inst[Drains$site_no == drainID[i]])
+}
+plot(Drains$dateTime[Drains$site_no == drainID[4]], Drains$Flow_Inst[Drains$site_no == drainID[4]], type="l", col="blue") #Dixie Drain
+
+Nat<-flow[flow$Cat == 'Natural',]
+natID<-unique(Nat$site_no)
+
+plot(Nat$dateTime[Nat$site_no == natID[1]], Nat$Flow_Inst[Nat$site_no == natID[1]], type="l", col="blue", ylim=c(0, 950))
+lines(Nat$dateTime[Nat$site_no ==natID[2]], Nat$Flow_Inst[Nat$site_no == natID[2]])
+lines(Nat$dateTime[Nat$site_no ==natID[3]], Nat$Flow_Inst[Nat$site_no == natID[3]], col = 'green')
+
+plot(Nat$dateTime[Nat$site_no == natID[4]], Nat$Flow_Inst[Nat$site_no == natID[4]], type="l", col="blue")
