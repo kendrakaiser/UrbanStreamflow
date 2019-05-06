@@ -22,13 +22,19 @@ flowdata <- readNWISuv(siteNumbers = siteInfo$site_no, parameterCd = pCode, star
 
 flow<-merge(flowdata, USGS_sites, by.x="site_no", by.y="Code", all=TRUE)
 
+
+Q<-flow[flow$site_no == "13185000" | flow$site_no == "13206000" | flow$site_no ==  "13211205" | flow$site_no == "13213000",]
+Q<-Q[Q$dateTime < as.Date("2019-03-06"),]
+Q<-Q[,-6]
+write.csv(Q, file="BRB_Q_subset.csv")
+
 Drains<-flow[flow$Cat == 'Drain',]
 drainID<-unique(Drains$site_no)
 
-plot(Drains$dateTime[Drains$site_no == drainID[1]], Drains$Flow_Inst[Drains$site_no == drainID[1]], type="l", col="blue", ylim=c(0, 80))
-for (i in 2:3){
-  lines(Drains$dateTime[Drains$site_no == drainID[i]], Drains$Flow_Inst[Drains$site_no == drainID[i]])
-}
+plot(Drains$dateTime[Drains$site_no == drainID[1]], Drains$Flow_Inst[Drains$site_no == drainID[1]], type="l", col="blue", ylim=c(0, 80)) #eagle 
+lines(Drains$dateTime[Drains$site_no == drainID[2]], Drains$Flow_Inst[Drains$site_no == drainID[2]], col= 'red') #middleton slough
+lines(Drains$dateTime[Drains$site_no == drainID[3]], Drains$Flow_Inst[Drains$site_no == drainID[3]], col='green') #S middleton drain
+
 plot(Drains$dateTime[Drains$site_no == drainID[4]], Drains$Flow_Inst[Drains$site_no == drainID[4]], type="l", col="blue") #Dixie Drain
 
 Nat<-flow[flow$Cat == 'Natural',]
