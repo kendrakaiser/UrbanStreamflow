@@ -2,7 +2,7 @@
 # Download all data from the Boise Basin for three rain events in February 2019
 # Kendra Kaiser January 9th 2018
 #---------------
-
+### use fillMiss function in the data retreival package to deal with weird numbers
 library(dataRetrieval)
 library(tidyverse)
 
