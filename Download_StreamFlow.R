@@ -14,38 +14,40 @@ write_csv(siteInfo, "siteInfo.csv")
 
 
 start=as.Date("2019-01-16")
-end= as.Date("2019-03-16")
+end= as.Date("2019-03-06")
 pCode <- "00060"
-
 
 flowdata <- readNWISuv(siteNumbers = siteInfo$site_no, parameterCd = pCode, startDate = start, endDate = end) %>% renameNWISColumns() %>% data.frame
 
 flow<-merge(flowdata, USGS_sites, by.x="site_no", by.y="Code", all=TRUE)
 
-
 Q<-flow[flow$site_no == "13185000" | flow$site_no == "13206000" | flow$site_no ==  "13211205" | flow$site_no == "13213000",]
-Q<-Q[Q$dateTime < as.Date("2019-03-06"),]
 Q<-Q[,-6]
 write.csv(Q, file="BRB_Q_subset.csv")
 
 Drains<-flow[flow$Cat == 'Drain',]
 drainID<-unique(Drains$site_no)
 
-plot(Drains$dateTime[Drains$site_no == drainID[1]], Drains$Flow_Inst[Drains$site_no == drainID[1]], type="l", col="blue", ylim=c(0, 80)) #eagle 
-lines(Drains$dateTime[Drains$site_no == drainID[2]], Drains$Flow_Inst[Drains$site_no == drainID[2]], col= 'red') #middleton slough
+plot(Drains$dateTime[Drains$site_no == drainID[1]], Drains$Flow_Inst[Drains$site_no == drainID[1]], type="l", col="black", ylim=c(0, 60), xlab="Date", ylab="Discharge (cfs)") #eagle 
+lines(Drains$dateTime[Drains$site_no == drainID[2]], Drains$Flow_Inst[Drains$site_no == drainID[2]], col= 'blue') #middleton slough
 lines(Drains$dateTime[Drains$site_no == drainID[3]], Drains$Flow_Inst[Drains$site_no == drainID[3]], col='green') #S middleton drain
+legend("topleft", legend=c("Eagle", "Middleton Slough", "S Middleton"), col=c("black", "blue", "green"), lty=1:2, cex=0.8)
+axis.POSIXct(1, at = seq(start, end, by="weeks"), format = "%m-%d")
 
-plot(Drains$dateTime[Drains$site_no == drainID[4]], Drains$Flow_Inst[Drains$site_no == drainID[4]], type="l", col="blue") #Dixie Drain
+plot(Drains$dateTime[Drains$site_no == drainID[4]], Drains$Flow_Inst[Drains$site_no == drainID[4]], type="l", col="blue", xlab="Date", ylab="Discharge (cfs)") #Dixie Drain
+axis.POSIXct(1, at = seq(start, end, by="weeks"), format = "%m-%d")
 
 Nat<-flow[flow$Cat == 'Natural',]
 natID<-unique(Nat$site_no)
 
-plot(Nat$dateTime[Nat$site_no == natID[1]], Nat$Flow_Inst[Nat$site_no == natID[1]], type="l", col="blue", ylim=c(0, 950))
+plot(Nat$dateTime[Nat$site_no == natID[1]], Nat$Flow_Inst[Nat$site_no == natID[1]], type="l", col="blue", ylim=c(0, 950), xlab="Date", ylab="Discharge (cfs)")
 lines(Nat$dateTime[Nat$site_no ==natID[2]], Nat$Flow_Inst[Nat$site_no == natID[2]], col = 'green')
 lines(Nat$dateTime[Nat$site_no ==natID[3]], Nat$Flow_Inst[Nat$site_no == natID[3]], col = 'black')
 legend("topleft", legend=c("Boise Twin Springs", "SF Boise Featherville", "Mores Creek"), col=c("blue", "green", 'black'), lty=1:2, cex=0.8)
-plot(Nat$dateTime[Nat$site_no == natID[4]], Nat$Flow_Inst[Nat$site_no == natID[4]], type="l", col="blue")
+axis.POSIXct(1, at = seq(start, end, by="weeks"), format = "%m-%d")
 
+plot(Nat$dateTime[Nat$site_no == natID[4]], Nat$Flow_Inst[Nat$site_no == natID[4]], type="l", col="red", xlab="Date", ylab="Discharge (cfs)")
+axis.POSIXct(1, at = seq(start, end, by="weeks"), format = "%m-%d")
 library(XML)
 # pu: cumulative water year precip; px: observed daily totatl precip; ID: computed reservoir inflow
 url_ark <- "daily_precip_ark.htm" #arrowrock
@@ -73,10 +75,16 @@ res<-data.frame("Date"= as.Date(and[,1]), "andP"=as.numeric(and$and_pp), "arkP" 
 
 Managed<-flow[flow$Cat == 'Managed',]
 manID<-unique(Managed$site_no)
-plot(res$Date, res$lucQ, col='black', type='l')
-plot(Managed$dateTime[Managed$site_no == manID[2]], Managed$Flow_Inst[Managed$site_no == manID[2]], type="l", col="blue", ylim=c(200, 3000))
+
+plot(Managed$dateTime[Managed$site_no == manID[2]], Managed$Flow_Inst[Managed$site_no == manID[2]], type="l", col="blue", ylim=c(200, 1600), xlab="Date", ylab="Discharge (cfs)")
+abline(h=252)
 lines(Managed$dateTime[Managed$site_no == manID[3]], Managed$Flow_Inst[Managed$site_no == manID[3]], col='green')
 lines(Managed$dateTime[Managed$site_no == manID[6]], Managed$Flow_Inst[Managed$site_no == manID[6]], col='orange')
 lines(Managed$dateTime[Managed$site_no == manID[7]], Managed$Flow_Inst[Managed$site_no == manID[7]], col= 'red')
-legend("topleft", legend=c("Below Arrowrock", "Glenwood", "Caldwell", "Parma"), col=c("blue", "green", 'orange', 'red'), lty=1:2, cex=0.8)
+legend("topleft", legend=c("Below Arrowrock", "Glenwood", "Caldwell", "Parma"), col=c("blue", "green", 'orange', 'red'), lty=1:2, cex=0.8)+
+axis.POSIXct(1, at = seq(start, end, by="weeks"), format = "%m-%d")
+
+
+
+axis(1, Managed$dateTime, format(Managed$dateTime, "%d %d"), cex.axis = .7)
 

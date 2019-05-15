@@ -7,5 +7,5 @@ library(rgdal)
 
 setwd("~/Documents/GitRepos/UrbanStreamflow")
 
-files<- list.files(path = '~/Documents/GitRepos/UrbanStreamflow/BRB/', all.files=TRUE, full.name= TRUE)
+files<- list.files(path = '~/Documents/GitRepos/UrbanStreamflow/BRB', all.files=TRUE, full.name= TRUE)
 rst<-raster(file[1])
